@@ -1,9 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { PixelArtScene } from './scenes/test.scene.tsx'
+import SceneContainer from './components/containers/SceneContainer'
+import TestScene from './scenes/Test.scene'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <PixelArtScene />
+    <SceneContainer>
+      <TestScene />
+    </SceneContainer>
   </StrictMode>,
 )
