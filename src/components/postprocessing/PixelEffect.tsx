@@ -1,47 +1,49 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { EffectComposer, RenderPixelatedPass, OutlineEffect } from "three-stdlib";
+import { EffectComposer, RenderPass, RenderPixelatedPass, ShaderPass, SobelOperatorShader } from "three-stdlib";
 
+interface PixelArtComposerProps { pixelSize?: number; }
 
-interface PixelArtComposerProps {
-    pixelSize?: number;
-    outlineThickness?: number;
-}
-
-const PixelEffect: React.FC<PixelArtComposerProps> = ({ pixelSize = 6, outlineThickness = 0.01 }) => {
-    const composerRef = useRef<EffectComposer>(null);
-    const outlineRef = useRef<OutlineEffect>(null);
+const PixelEffect: React.FC<PixelArtComposerProps> = ({ pixelSize = 6 }) => {
+    const composerRef = useRef<EffectComposer | null>(null);
     const { gl, scene, camera, size } = useThree();
+    useEffect(() => {
+        if (!gl) return;
+
+        const composer = new EffectComposer(gl);
+        composer.setSize(size.width, size.height);
+
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const sobelPass = new ShaderPass(SobelOperatorShader);
+        sobelPass.uniforms["resolution"].value = new THREE.Vector2(size.width, size.height);
+        composer.addPass(sobelPass);
+
+        const pixelPass = new RenderPixelatedPass(
+            new THREE.Vector2(size.width, size.height),
+            pixelSize, scene, camera
+        );
+        composer.addPass(pixelPass);
+
+        composerRef.current = composer;
+        return () => {
+            composer.dispose(); scene.fog = null;
+        };
+
+    }, [gl, scene, camera, size, pixelSize]);
 
     useEffect(() => {
-        // OutlineEffect : contour de tous les meshes
-        outlineRef.current = new OutlineEffect(gl, {
-            defaultAlpha: 1,
-            defaultThickness: 1,
-            defaultKeepAlive: true,
-            defaultColor: [0, 0, 0]
-        });
-
-        // Pixelation via RenderPixelatedPass
-        composerRef.current = new EffectComposer(gl);
-        composerRef.current.addPass(new RenderPixelatedPass(
-            new THREE.Vector2(size.width, size.height),
-            pixelSize,
-            scene,
-            camera
-        ));
-    }, [gl, scene, camera, pixelSize, size]);
+        if (composerRef.current) {
+            composerRef.current.setSize(size.width, size.height);
+        }
+    }, [size]);
 
     useFrame(() => {
-        if (outlineRef.current && composerRef.current) {
-            // On applique d’abord les contours puis la pixelation
-            outlineRef.current.render(scene, camera);
-            composerRef.current.render();
-        }
-    }, 1);
+        if (composerRef.current) { composerRef.current.render(); }
+    }, 1); return null;
 
-    return null;
 };
 
 export default PixelEffect;

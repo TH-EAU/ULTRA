@@ -128,13 +128,13 @@ export function SkyComponent({
         }
 
         // Synchronisation du fog avec la couleur du ciel
-        if (syncFog) {
-            if (scene.fog) {
-                (scene.fog as THREE.Fog).color = fogColor;
-            } else {
-                scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
-            }
-        }
+        // if (syncFog) {
+        //     if (scene.fog) {
+        //         (scene.fog as THREE.Fog).color = fogColor;
+        //     } else {
+        //         scene.fog = new THREE.Fog(fogColor, fogNear, fogFar);
+        //     }
+        // }
 
         // Synchronisation de l'ambient light
         if (syncAmbientLight) {

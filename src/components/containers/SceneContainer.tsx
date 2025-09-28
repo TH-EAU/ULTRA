@@ -1,21 +1,26 @@
-import { Canvas } from "@react-three/fiber"
-import PixelEffect from "../postprocessing/PixelEffect"
-import { OrbitControls } from "@react-three/drei"
+import { Canvas } from "@react-three/fiber";
+import type { ReactNode } from "react";
+import PixelEffect from "../postprocessing/PixelEffect";
+import { OrbitControls } from "@react-three/drei";
+import { SkyComponent } from "../game/SkyComponent";
 
-const SceneContainer = ({ children }: { children: React.ReactNode }) => {
-    return (
-        <Canvas
-            shadows
-            dpr={0.6}
-            camera={{ position: [10, 10, 10], fov: 75 }}
-            gl={{ antialias: false }}
-            style={{ width: "100vw", height: "100vh", imageRendering: "pixelated" }}
-        >
-            <OrbitControls />
-            <PixelEffect pixelSize={1} />
-            {children}
-        </Canvas>
-    )
+interface SceneContainerProps {
+    children: ReactNode;
 }
 
-export default SceneContainer
+export default function SceneContainer({ children }: SceneContainerProps) {
+    return (
+        <Canvas
+            gl={{ antialias: false, powerPreference: "high-performance" }}
+            shadows
+            style={{ width: "100vw", height: "100vh", backgroundColor: "black", imageRendering: "pixelated" }}
+            orthographic
+            camera={{ position: [20, 20, 20], zoom: 30, near: 0.1, far: 100 }}
+        >
+            <OrbitControls />
+            <SkyComponent sunElevation={2} />
+            {children}
+            <PixelEffect pixelSize={2} />
+        </Canvas>
+    );
+}
